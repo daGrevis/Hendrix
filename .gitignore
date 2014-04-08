@@ -1,0 +1,4 @@
+.sass-cache/
+static/scripts/*.js
+static/styles/*.css
+static/vendor/
