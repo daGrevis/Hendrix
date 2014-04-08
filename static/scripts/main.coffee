@@ -1,6 +1,23 @@
 BASE_URL = "http://127.0.0.1:8000"
 CHAT_SLUG = "hello-world"
 
+avatars = [
+    "https://minotar.net/avatar/clone1018/64.png",
+    "https://minotar.net/avatar/citricsquid/64.png",
+    "https://minotar.net/avatar/Raitsui/64.png",
+    "https://minotar.net/avatar/runforthefinish/64.png",
+    "https://minotar.net/avatar/NoMercyJon/64.png",
+    "https://minotar.net/avatar/Nautika/64.png",
+    "https://minotar.net/avatar/Notch/64.png",
+    "https://minotar.net/avatar/NiteAngel/64.png",
+    "https://minotar.net/avatar/S1NZ/64.png",
+    "https://minotar.net/avatar/drupal/64.png",
+    "https://minotar.net/avatar/ez/64.png",
+]
+
+getAvatarLink = ->
+    avatars[_.random avatars.length]
+
 # uuid4 = ->
 #     # From http://stackoverflow.com/a/2117523/458610.
 #     "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace /[xy]/g, (c) ->
@@ -56,8 +73,7 @@ ChatMessage = React.createClass
     render: ->
         (Dom.li className: "media",
             (Dom.a className: "pull-left",
-                # TODO: Make email somewhat dynamic.
-                (Dom.img width: 64, height: 64, src: "http://avatars.io/email/dagrevis@gmail.com?size=small", className: "media-object")),
+                (Dom.img width: 64, height: 64, src: getAvatarLink(), className: "media-object")),
             (Dom.div className: "media-body", @props.message))
 
 ChatMessages = React.createClass
