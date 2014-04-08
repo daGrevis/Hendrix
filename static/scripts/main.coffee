@@ -65,12 +65,6 @@ ChatNew = React.createClass
             (Dom.form null,
                 (Textarea id: "message", placeholder: "Type a message here...")))
 
-About = React.createClass
-    displayName: "About"
-
-    render: ->
-        (Dom.p null, "Hello from About!")
-
 routes = [
     ["/", Index()],
     [/chat\/([\w-_]+)?/, ChatNew()]
