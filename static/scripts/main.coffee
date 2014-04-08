@@ -50,6 +50,31 @@ Index = React.createClass
     render: ->
         (Dom.p null, "Hello from Index!")
 
+ChatMessage = React.createClass
+    displayName: "ChatMessage"
+
+    render: ->
+        (Dom.li className: "media",
+            (Dom.a className: "pull-left",
+                # TODO: Make email somewhat dynamic.
+                (Dom.img width: 64, height: 64, src: "http://avatars.io/email/dagrevis@gmail.com?size=small", className: "media-object")),
+            (Dom.div className: "media-body", @props.message))
+
+ChatMessages = React.createClass
+    displayName: "ChatMessages"
+
+    getInitialState: ->
+        messages: [
+            "foo",
+            "bar",
+            "baz"
+        ]
+
+    render: ->
+        (Dom.ul className: "media-list",
+            _.map @state.messages, (message) ->
+                (ChatMessage message: message))
+
 ChatNew = React.createClass
     displayName: "ChatNew"
 
@@ -62,6 +87,7 @@ ChatNew = React.createClass
         (Dom.div null,
             (Dom.form null,
                 (Input id: "link", label: "Link to the chat", readOnly: true, value: link)),
+            (ChatMessages null),
             (Dom.form null,
                 (Textarea id: "message", placeholder: "Type a message here...")))
 
