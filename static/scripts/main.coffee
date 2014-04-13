@@ -93,8 +93,11 @@ ChatMessage = React.createClass
 ChatMessages = React.createClass
     displayName: "ChatMessages"
 
+    componentDidUpdate: ->
+        $("#chat-messages").scrollTop($("#chat-messages").height())
+
     render: ->
-        (Dom.ul className: "media-list",
+        (Dom.ul id: "chat-messages", className: "media-list",
             _.map @props.messages, (message) ->
                 (ChatMessage content: message.content, displayName: message.displayName, email: message.email, email: message.email))
 
