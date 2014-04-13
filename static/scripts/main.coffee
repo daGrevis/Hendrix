@@ -2,20 +2,12 @@ Dom = React.DOM
 
 delay = (ms, fn) -> setTimeout fn, ms
 
-BASE_URL = "http://127.0.0.1:8000"
+getSegments = ->
+    uri = new URI
+    uri.fragment().split("/").slice(1)
 
-peer = new Peer key: "3wlgt1tsm69u23xr"
-
-peer.on "open", (peerId) ->
-    window.peerId = peerId
-    initApp()
-
-peer.on "connection", (connection) ->
-    window.connection = connection
-    router.setRoute "/chat"
-
-peer.on "error", (error) ->
-    alert error.message
+PEER_KEY = "3wlgt1tsm69u23xr"
+BASE_URL = "#{ location.protocol }//#{ location.host }"
 
 Noop = React.createClass
     displayName: "Noop"
@@ -143,19 +135,14 @@ ChatForm = React.createClass
             keysPressed[event.key] = false
             @setState keysPressed: keysPressed
 
-Chat = React.createClass
-    displayName: "Chat"
+ChatConnected = React.createClass
+    displayName: "ChatConnected"
 
     getInitialState: ->
         messages: []
 
-    componentWillMount: ->
-        if not connection?
-            router.setRoute "/connect"
-            return
-
     componentDidMount: ->
-        connection.on "data", (message) =>
+        (@props.connection).on "data", (message) =>
             @addMessage message
 
     render: ->
@@ -171,35 +158,57 @@ Chat = React.createClass
     sendMessage: (message) ->
         @addMessage message
 
-        connection.send message
+        (@props.connection).send message
 
 
-Connect = React.createClass
+ChatDisconnected = React.createClass
     mixins: [React.addons.LinkedStateMixin]
 
-    displayName: "Connect"
+    displayName: "ChatDisconnected"
 
     getInitialState: ->
         otherId: ""
 
     render: ->
-        (Dom.form onSubmit: @connect,
-            (Input id: "yourId", label: "Your ID", readOnly: true, value: peerId),
-            (Input id: "otherId", label: "Other ID", valueLink: @linkState "otherId"),
-            (ReactBootstrap.Button bsStyle: "primary", type: "submit",
-                "Connect"))
+        chatLink = "#{ BASE_URL }/#/chat/#{ @props.peerId }"
 
-    connect: (event) ->
-        event.preventDefault()
+        (Dom.div null,
+            (Dom.form null,
+                (Input id: "link", label: "Chat Link", readOnly: true, value: chatLink)
+            ))
 
-        if not @state.otherId
-            alert "You can't connect to nothing!"
-            return
+Chat = React.createClass
+    displayName: "Chat"
 
-        window.connection = peer.connect @state.otherId
+    getInitialState: ->
+        currentComponent: Noop()
 
-        connection.on "open", ->
-            router.setRoute "/chat"
+    componentWillMount: ->
+        @peer = new Peer key: PEER_KEY
+
+        @peer.on "open", (peerId) =>
+
+            otherPersonPeerId = getSegments()[1]
+
+            if otherPersonPeerId?
+                connection = @peer.connect otherPersonPeerId
+                @setState currentComponent: ChatConnected(connection: connection)
+            else
+                @setState currentComponent: ChatDisconnected(peerId: peerId)
+
+                @peer.on "connection", (connection) =>
+                    @setState currentComponent: ChatConnected(connection: connection)
+
+    componentDidMount: ->
+        # TODO: This should be in `componentWillMount`, but it gives an error.
+        @peer.on "error", =>
+            @props.addAlert type: "danger",
+                (Dom.span null,
+                    (Dom.strong null, "Oh snap! "),
+                    (Dom.span null, "Something went terribly wrong with WebRTC."))
+
+    render: ->
+        @state.currentComponent
 
 Settings = React.createClass
     mixins: [React.addons.LinkedStateMixin]
@@ -227,47 +236,45 @@ Settings = React.createClass
 
         @props.addAlert type: "success", "Changes saved!"
 
-initApp = ->
+routes = [
+    ["/chat", Chat]
+    [/chat\/[a-z0-9]+/, Chat]
+    ["/settings", Settings]
+]
 
-    routes = [
-        ["/connect", Connect]
-        ["/chat", Chat]
-        ["/settings", Settings]
-    ]
+navbarItems = [
+    ["/chat", "Chat"]
+    ["/settings", "Settings"]
+]
 
-    navbarItems = [
-        ["/connect", "Connect"]
-        ["/settings", "Settings"]
-    ]
+window.router = Router()
 
-    window.router = Router()
+Root = React.createClass
+    displayName: "Root"
 
-    Root = React.createClass
-        displayName: "Root"
+    getInitialState: ->
+        currentComponent: Noop()
+        alert: Noop()
 
-        getInitialState: ->
-            currentComponent: Connect()
-            alert: Noop()
+    componentDidMount: ->
+        _.forEach @props.routes, (route) =>
+            [url, component] = route
 
-        componentDidMount: ->
-            _.forEach @props.routes, (route) =>
-                [url, component] = route
+            router.on url, =>
+                @setState currentComponent: component(addAlert: @addAlert)
+        router.init @props.defaultRoute
 
-                router.on url, =>
-                    @setState currentComponent: component(addAlert: @addAlert)
-            router.init @props.defaultRoute
+    render: ->
+        (Dom.div null,
+            (Navbar brandName: "Peer Chat", navbarItems: @props.navbarItems),
+            (@state.alert)
+            (@state.currentComponent))
 
-        render: ->
-            (Dom.div null,
-                (Navbar brandName: "Peer Chat", navbarItems: @props.navbarItems),
-                (@state.alert)
-                (@state.currentComponent))
+    addAlert: (props, children) ->
+        @setState alert: Alert(props, children)
 
-        addAlert: (props, children) ->
-            @setState alert: Alert(props, children)
+        delay 4 * 1000, =>
+            @setState alert: Noop()
 
-            delay 4 * 1000, =>
-                @setState alert: Noop()
-
-    mountNode = document.getElementById("react")
-    React.renderComponent Root(routes: routes, defaultRoute: "/connect", navbarItems: navbarItems), mountNode
+mountNode = document.getElementById("react")
+React.renderComponent Root(routes: routes, defaultRoute: "/chat", navbarItems: navbarItems), mountNode
