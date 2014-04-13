@@ -44,15 +44,12 @@ ChatMessage = React.createClass
     displayName: "ChatMessage"
 
     render: ->
-        email = store.get "email"
-        displayName = store.get "displayName"
-
         (Dom.li className: "media",
             (Dom.a className: "pull-left",
-                (Dom.img width: 64, height: 64, src: "http://avatars.io/email/#{ email }?size=medium", className: "media-object")),
+                (Dom.img width: 64, height: 64, src: "http://avatars.io/email/#{ @props.email }?size=medium", className: "media-object")),
             (Dom.div className: "media-body",
-                (Dom.h4 className: "media-heading", displayName),
-                @props.message))
+                (Dom.h4 className: "media-heading", @props.displayName),
+                @props.content))
 
 ChatMessages = React.createClass
     displayName: "ChatMessages"
@@ -60,7 +57,7 @@ ChatMessages = React.createClass
     render: ->
         (Dom.ul className: "media-list",
             _.map @props.messages, (message) ->
-                (ChatMessage message: message))
+                (ChatMessage content: message.content, displayName: message.displayName, email: message.email, email: message.email))
 
 ChatForm = React.createClass
     mixins: [React.addons.LinkedStateMixin]
@@ -88,7 +85,11 @@ ChatForm = React.createClass
                     alert "You can't send nothing!"
                     return
 
-                @props.sendMessage @state.message
+                message =
+                    displayName: store.get "displayName"
+                    email: store.get "email"
+                    content: @state.message
+                @props.sendMessage message
 
                 @setState message: ""
 
@@ -154,6 +155,7 @@ Connect = React.createClass
             return
 
         window.connection = peer.connect @state.otherId
+
         connection.on "open", ->
             router.setRoute "/chat"
 
