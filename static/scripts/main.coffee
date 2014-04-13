@@ -1,5 +1,7 @@
 Dom = React.DOM
 
+delay = (ms, fn) -> setTimeout fn, ms
+
 BASE_URL = "http://127.0.0.1:8000"
 
 peer = new Peer key: "3wlgt1tsm69u23xr"
@@ -65,7 +67,7 @@ Alert = React.createClass
     render: ->
         defaultProps =
             type: "success"
-            className: "alert alert-dismissable"
+            className: "alert"
         props = _.extend defaultProps, @props
 
         props.className = "#{ props.className } alert-#{ props.type }"
@@ -73,8 +75,6 @@ Alert = React.createClass
         delete props.type
 
         (Dom.div props,
-            (Dom.button type: "button", className: "close", "data-dismiss": "alert", "aria-hidden": true,
-                "×"),
             @props.children)
 
 ChatMessage = React.createClass
@@ -223,9 +223,9 @@ Settings = React.createClass
 initApp = ->
 
     routes = [
-        ["/connect", Connect()]
-        ["/chat", Chat()]
-        ["/settings", Settings()]
+        ["/connect", Connect]
+        ["/chat", Chat]
+        ["/settings", Settings]
     ]
 
     navbarItems = [
@@ -247,7 +247,7 @@ initApp = ->
                 [url, component] = route
 
                 router.on url, =>
-                    @setState currentComponent: component
+                    @setState currentComponent: component(addAlert: @addAlert)
             router.init @props.defaultRoute
 
         render: ->
@@ -258,6 +258,9 @@ initApp = ->
 
         addAlert: (alert) ->
             @setState alert: alert
+
+            delay 5 * 1000, =>
+                @setState alert: Noop()
 
     mountNode = document.getElementById("react")
     React.renderComponent Root(routes: routes, defaultRoute: "/connect", navbarItems: navbarItems), mountNode
