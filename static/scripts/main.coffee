@@ -9,8 +9,6 @@ peer.on "open", (peer_id) ->
     initApp()
 
 peer.on "connection", (connection) ->
-    console.log "You two are connected!"
-
     window.connection = connection
     router.setRoute "/chat"
 
@@ -48,19 +46,10 @@ Input = React.createClass
             (Dom.input props))
 
 Textarea = React.createClass
-    mixins: [React.addons.LinkedStateMixin]
-
     displayName: "Textarea"
-
-    getInitialState: ->
-        message: ""
-
-    componentDidMount: ->
-        new Behave textarea: document.getElementById @props.id
 
     render: ->
         defaultProps =
-            valueLink: @linkState "message"
             cols: 80
             rows: 4
             className: "form-control"
@@ -98,23 +87,34 @@ ChatForm = React.createClass
 
     getInitialState: ->
         message: ""
+        keysPressed:
+            "Shift": false
+            "Enter": false
 
     render: ->
-        (Dom.form onSubmit: @send,
-            (Textarea id: "message", placeholder: "Type a message here...", valueLink: @linkState "message"),
-            (ReactBootstrap.Button bsStyle: "primary", type: "submit",
-                "Send"))
+        (Dom.form onKeyDown: @keyDown, onKeyUp: @keyUp,
+            (Textarea id: "message", placeholder: "Type a message here...", valueLink: @linkState "message"))
 
-    send: (event) ->
-        event.preventDefault()
+    keyDown: (event) ->
+        if event.key in _.keys @state.keysPressed
+            keysPressed = @state.keysPressed
+            keysPressed[event.key] = true
+            @setState keysPressed: keysPressed
 
-        if not @state.message
-            alert "You can't send nothing!"
-            return
+            if keysPressed["Shift"] and keysPressed["Enter"]
+                if not @state.message
+                    alert "You can't send nothing!"
+                    return
 
-        @props.send @state.message
+                @props.send @state.message
 
-        @setState message: ""
+                @setState message: ""
+
+    keyUp: (event) ->
+        if event.key in _.keys @state.keysPressed
+            keysPressed = @state.keysPressed
+            keysPressed[event.key] = false
+            @setState keysPressed: keysPressed
 
 Chat = React.createClass
     displayName: "Chat"
