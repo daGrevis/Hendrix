@@ -122,7 +122,7 @@ ChatForm = React.createClass
             keysPressed[event.key] = true
             @setState keysPressed: keysPressed
 
-            if keysPressed["Shift"] and keysPressed["Enter"]
+            if not keysPressed["Shift"] and keysPressed["Enter"]
                 if not @state.message
                     alert "You can't send nothing!"
                     return
