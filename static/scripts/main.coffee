@@ -1,5 +1,21 @@
+Dom = React.DOM
+
 BASE_URL = "http://127.0.0.1:8000"
-CHAT_SLUG = "hello-world"
+
+peer = new Peer key: "3wlgt1tsm69u23xr"
+
+peer.on "open", (peer_id) ->
+    window.peer_id = peer_id
+    initApp()
+
+peer.on "connection", (connection) ->
+    console.log "You two are connected!"
+
+    window.connection = connection
+    router.setRoute "/chat"
+
+peer.on "error", (error) ->
+    alert error.message
 
 avatars = [
     "https://minotar.net/avatar/clone1018/64.png",
@@ -17,13 +33,6 @@ avatars = [
 
 getAvatarLink = ->
     avatars[_.random avatars.length]
-
-# uuid4 = ->
-#     # From http://stackoverflow.com/a/2117523/458610.
-#     "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace /[xy]/g, (c) ->
-#         r = Math.random() * 16 | 0
-#         v = (if c is "x" then r else (r & 0x3 | 0x8))
-#         v.toString 16
 
 Input = React.createClass
     displayName: "Input"
@@ -59,8 +68,6 @@ Textarea = React.createClass
 
         (Dom.textarea props)
 
-Dom = React.DOM
-
 Index = React.createClass
     displayName: "Index"
 
@@ -79,70 +86,132 @@ ChatMessage = React.createClass
 ChatMessages = React.createClass
     displayName: "ChatMessages"
 
-    getInitialState: ->
-        messages: [
-            "foo",
-            "bar",
-            "baz"
-        ]
-
     render: ->
         (Dom.ul className: "media-list",
-            _.map @state.messages, (message) ->
+            _.map @props.messages, (message) ->
                 (ChatMessage message: message))
 
-ChatNew = React.createClass
-    displayName: "ChatNew"
+ChatForm = React.createClass
+    mixins: [React.addons.LinkedStateMixin]
 
-    componentWillMount: ->
-        router.setRoute "/chat/#{ CHAT_SLUG }"
-
-    render: ->
-        link = "#{ BASE_URL }/#/chat/#{ CHAT_SLUG }"
-
-        (Dom.div null,
-            (Dom.form null,
-                (Input id: "link", label: "Link to the chat", readOnly: true, value: link)),
-            (ChatMessages null),
-            (Dom.form null,
-                (Textarea id: "message", placeholder: "Type a message here...")))
-
-routes = [
-    ["/", Index()],
-    [/chat\/([\w-_]+)?/, ChatNew()]
-]
-
-navItems = [
-    ["/", "Index"],
-    ["/chat/", "Chat"]
-]
-
-router = Router()
-
-Root = React.createClass
-    displayName: "Root"
+    displayName: "ChatForm"
 
     getInitialState: ->
-        currentComponent: Index()
+        message: ""
+
+    render: ->
+        (Dom.form onSubmit: @send,
+            (Textarea id: "message", placeholder: "Type a message here...", valueLink: @linkState "message"),
+            (ReactBootstrap.Button bsStyle: "primary", type: "submit",
+                "Send"))
+
+    send: (event) ->
+        event.preventDefault()
+
+        if not @state.message
+            alert "You can't send nothing!"
+            return
+
+        @props.send @state.message
+
+        @setState message: ""
+
+Chat = React.createClass
+    displayName: "Chat"
+
+    getInitialState: ->
+        messages: []
+
+    componentWillMount: ->
+        if not connection?
+            router.setRoute "/connect"
+            return
 
     componentDidMount: ->
-        _.forEach @props.routes, (route) =>
-            [url, component] = route
-
-            router.on url, =>
-                @setState currentComponent: component
-        router.init @props.defaultRoute
-
+        connection.on "data", (message) =>
+            @addMessage message
 
     render: ->
         (Dom.div null,
-            (ReactBootstrap.Nav bsStyle: "pills",
-                _.map @props.navItems, (item) ->
-                    [url, title] = item
+            (ChatMessages messages: @state.messages),
+            (ChatForm send: @send))
 
-                    (ReactBootstrap.NavItem href: "##{ url }", title))
+    addMessage: (message) ->
+        messages = @state.messages
+        messages.push message
+        @setState messages: messages
 
-            (@state.currentComponent))
+    send: (message) ->
+        @addMessage message
 
-mountNode = document.getElementsByClassName("container")[0]
-React.renderComponent Root(routes: routes, navItems: navItems, defaultRoute: "/"), mountNode
+        connection.send message
+
+
+Connect = React.createClass
+    mixins: [React.addons.LinkedStateMixin]
+
+    displayName: "Connect"
+
+    getInitialState: ->
+        other_id: ""
+
+    render: ->
+        (Dom.form onSubmit: @connect,
+            (Input id: "your_id", label: "Your ID", readOnly: true, value: peer_id),
+            (Input id: "other_id", label: "Other ID", valueLink: @linkState "other_id"),
+            (ReactBootstrap.Button bsStyle: "primary", type: "submit",
+                "Connect"))
+
+    connect: (event) ->
+        event.preventDefault()
+
+        if not @state.other_id
+            alert "You can't connect to nothing!"
+            return
+
+        window.connection = peer.connect @state.other_id
+        connection.on "open", ->
+            router.setRoute "/chat"
+
+initApp = ->
+
+    routes = [
+        ["/", Index()],
+        ["/connect", Connect()]
+        ["/chat", Chat()]
+    ]
+
+    navItems = [
+        ["/", "Index"],
+        ["/connect", "Connect"]
+    ]
+
+    window.router = Router()
+
+    Root = React.createClass
+        displayName: "Root"
+
+        getInitialState: ->
+            currentComponent: Index()
+
+        componentDidMount: ->
+            _.forEach @props.routes, (route) =>
+                [url, component] = route
+
+                router.on url, =>
+                    @setState currentComponent: component
+            router.init @props.defaultRoute
+
+
+        render: ->
+            (Dom.div null,
+                (ReactBootstrap.Nav bsStyle: "pills",
+                    _.map @props.navItems, (item) ->
+                        [url, title] = item
+
+                        (ReactBootstrap.NavItem href: "##{ url }", title))
+
+                (@state.currentComponent))
+
+    mountNode = document.getElementsByClassName("container")[0]
+    React.renderComponent Root(routes: routes, navItems: navItems, defaultRoute: "/"), mountNode
