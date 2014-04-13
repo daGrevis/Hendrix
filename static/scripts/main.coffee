@@ -81,12 +81,14 @@ ChatMessage = React.createClass
     displayName: "ChatMessage"
 
     render: ->
+        content = marked @props.content
+
         (Dom.li className: "media",
             (Dom.a className: "pull-left",
-                (Dom.img width: 64, height: 64, src: "http://avatars.io/email/#{ @props.email }?size=medium", className: "media-object")),
+                (Dom.img width: 32, height: 32, src: "http://avatars.io/email/#{ @props.email }?size=small", className: "media-object")),
             (Dom.div className: "media-body",
                 (Dom.h4 className: "media-heading", @props.displayName),
-                @props.content))
+                (Dom.span dangerouslySetInnerHTML: {__html: content})))
 
 ChatMessages = React.createClass
     displayName: "ChatMessages"
