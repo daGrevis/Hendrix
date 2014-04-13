@@ -40,6 +40,27 @@ Textarea = React.createClass
 
         (Dom.textarea props)
 
+Navbar = React.createClass
+    displayName: "Navbar"
+
+    render: ->
+        (Dom.nav className: "navbar navbar-default",
+            (Dom.div className: "navbar-header",
+                (Dom.a className: "navbar-brand", @props.brandName)),
+            (Dom.ul className: "nav navbar-nav",
+                _.map @props.navbarItems, (item) ->
+                    [url, title] = item
+                    (Dom.li null,
+                        (Dom.a href: "##{ url }", title))))
+
+Alert = React.createClass
+    displayName: "Alert"
+
+    render: ->
+        (ReactBootstrap.Alert bsStyle: "danger",
+            (Dom.h4 null, @props.heading),
+            (Dom.p null, @props.content))
+
 ChatMessage = React.createClass
     displayName: "ChatMessage"
 
@@ -191,7 +212,7 @@ initApp = ->
         ["/settings", Settings()]
     ]
 
-    navItems = [
+    navbarItems = [
         ["/connect", "Connect"]
         ["/settings", "Settings"]
     ]
@@ -212,16 +233,11 @@ initApp = ->
                     @setState currentComponent: component
             router.init @props.defaultRoute
 
-
         render: ->
             (Dom.div null,
-                (ReactBootstrap.Nav bsStyle: "pills",
-                    _.map @props.navItems, (item) ->
-                        [url, title] = item
-
-                        (ReactBootstrap.NavItem href: "##{ url }", title))
-
+                # (Alert heading: "Oh snap!", content: "lorem"),
+                (Navbar brandName: "Peer Chat", navbarItems: @props.navbarItems),
                 (@state.currentComponent))
 
-    mountNode = document.getElementsByClassName("container")[0]
-    React.renderComponent Root(routes: routes, navItems: navItems, defaultRoute: "/connect"), mountNode
+    mountNode = document.getElementById("react")
+    React.renderComponent Root(routes: routes, navbarItems: navbarItems, defaultRoute: "/connect"), mountNode
