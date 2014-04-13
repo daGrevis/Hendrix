@@ -206,13 +206,13 @@ Settings = React.createClass
         email: store.get("email")
 
     render: ->
-        (Dom.form onSubmit: @saveSettings,
+        (Dom.form onSubmit: @save,
             (Input id: "displayName", label: "Display Name", valueLink: @linkState "displayName"),
             (Input id: "email", label: "Email (for Gravatar)", valueLink: @linkState "email"),
             (ReactBootstrap.Button bsStyle: "success", type: "submit",
                 "Save"))
 
-    saveSettings: (event) ->
+    save: (event) ->
         event.preventDefault()
 
         if @state.displayName
