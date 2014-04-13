@@ -15,6 +15,12 @@ peer.on "connection", (connection) ->
 peer.on "error", (error) ->
     alert error.message
 
+Noop = React.createClass
+    displayName: "Noop"
+
+    render: ->
+        (Dom.span null)
+
 Input = React.createClass
     displayName: "Input"
 
@@ -234,6 +240,7 @@ initApp = ->
 
         getInitialState: ->
             currentComponent: Connect()
+            alert: Noop()
 
         componentDidMount: ->
             _.forEach @props.routes, (route) =>
@@ -246,7 +253,11 @@ initApp = ->
         render: ->
             (Dom.div null,
                 (Navbar brandName: "Peer Chat", navbarItems: @props.navbarItems),
+                (@state.alert)
                 (@state.currentComponent))
 
+        addAlert: (alert) ->
+            @setState alert: alert
+
     mountNode = document.getElementById("react")
-    React.renderComponent Root(routes: routes, navbarItems: navbarItems, defaultRoute: "/connect"), mountNode
+    React.renderComponent Root(routes: routes, defaultRoute: "/connect", navbarItems: navbarItems), mountNode
