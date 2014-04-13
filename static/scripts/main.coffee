@@ -220,6 +220,8 @@ Settings = React.createClass
         if @state.email
             store.set "email", @state.email
 
+        @props.addAlert type: "success", "Changes saved!"
+
 initApp = ->
 
     routes = [
@@ -256,10 +258,10 @@ initApp = ->
                 (@state.alert)
                 (@state.currentComponent))
 
-        addAlert: (alert) ->
-            @setState alert: alert
+        addAlert: (props, children) ->
+            @setState alert: Alert(props, children)
 
-            delay 5 * 1000, =>
+            delay 4 * 1000, =>
                 @setState alert: Noop()
 
     mountNode = document.getElementById("react")
