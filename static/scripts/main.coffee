@@ -4,8 +4,8 @@ BASE_URL = "http://127.0.0.1:8000"
 
 peer = new Peer key: "3wlgt1tsm69u23xr"
 
-peer.on "open", (peer_id) ->
-    window.peer_id = peer_id
+peer.on "open", (peerId) ->
+    window.peerId = peerId
     initApp()
 
 peer.on "connection", (connection) ->
@@ -14,23 +14,6 @@ peer.on "connection", (connection) ->
 
 peer.on "error", (error) ->
     alert error.message
-
-avatars = [
-    "https://minotar.net/avatar/clone1018/64.png",
-    "https://minotar.net/avatar/citricsquid/64.png",
-    "https://minotar.net/avatar/Raitsui/64.png",
-    "https://minotar.net/avatar/runforthefinish/64.png",
-    "https://minotar.net/avatar/NoMercyJon/64.png",
-    "https://minotar.net/avatar/Nautika/64.png",
-    "https://minotar.net/avatar/Notch/64.png",
-    "https://minotar.net/avatar/NiteAngel/64.png",
-    "https://minotar.net/avatar/S1NZ/64.png",
-    "https://minotar.net/avatar/drupal/64.png",
-    "https://minotar.net/avatar/ez/64.png",
-]
-
-getAvatarLink = ->
-    avatars[_.random avatars.length]
 
 Input = React.createClass
     displayName: "Input"
@@ -57,20 +40,19 @@ Textarea = React.createClass
 
         (Dom.textarea props)
 
-Index = React.createClass
-    displayName: "Index"
-
-    render: ->
-        (Dom.p null, "Hello from Index!")
-
 ChatMessage = React.createClass
     displayName: "ChatMessage"
 
     render: ->
+        email = store.get "email"
+        displayName = store.get "displayName"
+
         (Dom.li className: "media",
             (Dom.a className: "pull-left",
-                (Dom.img width: 64, height: 64, src: getAvatarLink(), className: "media-object")),
-            (Dom.div className: "media-body", @props.message))
+                (Dom.img width: 64, height: 64, src: "http://avatars.io/email/#{ email }?size=medium", className: "media-object")),
+            (Dom.div className: "media-body",
+                (Dom.h4 className: "media-heading", displayName),
+                @props.message))
 
 ChatMessages = React.createClass
     displayName: "ChatMessages"
@@ -106,9 +88,11 @@ ChatForm = React.createClass
                     alert "You can't send nothing!"
                     return
 
-                @props.send @state.message
+                @props.sendMessage @state.message
 
                 @setState message: ""
+
+                event.preventDefault()
 
     keyUp: (event) ->
         if event.key in _.keys @state.keysPressed
@@ -134,14 +118,14 @@ Chat = React.createClass
     render: ->
         (Dom.div null,
             (ChatMessages messages: @state.messages),
-            (ChatForm send: @send))
+            (ChatForm sendMessage: @sendMessage))
 
     addMessage: (message) ->
         messages = @state.messages
         messages.push message
         @setState messages: messages
 
-    send: (message) ->
+    sendMessage: (message) ->
         @addMessage message
 
         connection.send message
@@ -153,37 +137,61 @@ Connect = React.createClass
     displayName: "Connect"
 
     getInitialState: ->
-        other_id: ""
+        otherId: ""
 
     render: ->
         (Dom.form onSubmit: @connect,
-            (Input id: "your_id", label: "Your ID", readOnly: true, value: peer_id),
-            (Input id: "other_id", label: "Other ID", valueLink: @linkState "other_id"),
+            (Input id: "yourId", label: "Your ID", readOnly: true, value: peerId),
+            (Input id: "otherId", label: "Other ID", valueLink: @linkState "otherId"),
             (ReactBootstrap.Button bsStyle: "primary", type: "submit",
                 "Connect"))
 
     connect: (event) ->
         event.preventDefault()
 
-        if not @state.other_id
+        if not @state.otherId
             alert "You can't connect to nothing!"
             return
 
-        window.connection = peer.connect @state.other_id
+        window.connection = peer.connect @state.otherId
         connection.on "open", ->
             router.setRoute "/chat"
+
+Settings = React.createClass
+    mixins: [React.addons.LinkedStateMixin]
+
+    displayName: "Settings"
+
+    getInitialState: ->
+        displayName: store.get("displayName")
+        email: store.get("email")
+
+    render: ->
+        (Dom.form onSubmit: @saveSettings,
+            (Input id: "displayName", label: "Display Name", valueLink: @linkState "displayName"),
+            (Input id: "email", label: "Email (for Gravatar)", valueLink: @linkState "email"),
+            (ReactBootstrap.Button bsStyle: "success", type: "submit",
+                "Save Settings"))
+
+    saveSettings: (event) ->
+        event.preventDefault()
+
+        if @state.displayName
+            store.set "displayName", @state.displayName
+        if @state.email
+            store.set "email", @state.email
 
 initApp = ->
 
     routes = [
-        ["/", Index()],
         ["/connect", Connect()]
         ["/chat", Chat()]
+        ["/settings", Settings()]
     ]
 
     navItems = [
-        ["/", "Index"],
         ["/connect", "Connect"]
+        ["/settings", "Settings"]
     ]
 
     window.router = Router()
@@ -192,7 +200,7 @@ initApp = ->
         displayName: "Root"
 
         getInitialState: ->
-            currentComponent: Index()
+            currentComponent: Connect()
 
         componentDidMount: ->
             _.forEach @props.routes, (route) =>
@@ -214,4 +222,4 @@ initApp = ->
                 (@state.currentComponent))
 
     mountNode = document.getElementsByClassName("container")[0]
-    React.renderComponent Root(routes: routes, navItems: navItems, defaultRoute: "/"), mountNode
+    React.renderComponent Root(routes: routes, navItems: navItems, defaultRoute: "/connect"), mountNode
