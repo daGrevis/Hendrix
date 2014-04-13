@@ -57,9 +57,19 @@ Alert = React.createClass
     displayName: "Alert"
 
     render: ->
-        (ReactBootstrap.Alert bsStyle: "danger",
-            (Dom.h4 null, @props.heading),
-            (Dom.p null, @props.content))
+        defaultProps =
+            type: "success"
+            className: "alert alert-dismissable"
+        props = _.extend defaultProps, @props
+
+        props.className = "#{ props.className } alert-#{ props.type }"
+
+        delete props.type
+
+        (Dom.div props,
+            (Dom.button type: "button", className: "close", "data-dismiss": "alert", "aria-hidden": true,
+                "×"),
+            @props.children)
 
 ChatMessage = React.createClass
     displayName: "ChatMessage"
@@ -235,7 +245,6 @@ initApp = ->
 
         render: ->
             (Dom.div null,
-                # (Alert heading: "Oh snap!", content: "lorem"),
                 (Navbar brandName: "Peer Chat", navbarItems: @props.navbarItems),
                 (@state.currentComponent))
 
