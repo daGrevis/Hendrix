@@ -187,20 +187,27 @@ Chat = React.createClass
         @peer = new Peer key: PEER_KEY
 
         @peer.on "open", (peerId) =>
+            @peerId = peerId
 
             otherPersonPeerId = getSegments()[1]
 
             if otherPersonPeerId?
                 connection = @peer.connect otherPersonPeerId
+                @onConnect()
+                @onClose connection
+
                 @setState currentComponent: ChatConnected(connection: connection)
             else
-                @setState currentComponent: ChatDisconnected(peerId: peerId)
+                @setState currentComponent: ChatDisconnected(peerId: @peerId)
 
                 @peer.on "connection", (connection) =>
+                    @onConnect()
+                    @onClose connection
+
                     @setState currentComponent: ChatConnected(connection: connection)
 
     componentDidMount: ->
-        # TODO: This should be in `componentWillMount`, but it gives an error.
+        # TODO: This should be in `componentWillMount`.
         @peer.on "error", =>
             @props.addAlert type: "danger",
                 (Dom.span null,
@@ -209,6 +216,20 @@ Chat = React.createClass
 
     render: ->
         @state.currentComponent
+
+    onConnect: ->
+        @props.addAlert type: "warning",
+            (Dom.span null,
+                (Dom.strong null, "Well done! "),
+                (Dom.span null, "You are connected now."))
+
+    onClose: (connection) ->
+        connection.on "close", =>
+            @props.addAlert type: "warning",
+                (Dom.span null,
+                    (Dom.strong null, "Warning! "),
+                    (Dom.span null, "The other person just disconnected."))
+            @setState currentComponent: ChatDisconnected(peerId: @peerId)
 
 Settings = React.createClass
     mixins: [React.addons.LinkedStateMixin]
@@ -247,6 +268,7 @@ navbarItems = [
     ["/settings", "Settings"]
 ]
 
+# TODO: Move this to `Root` component.
 window.router = Router()
 
 Root = React.createClass
@@ -273,8 +295,14 @@ Root = React.createClass
     addAlert: (props, children) ->
         @setState alert: Alert(props, children)
 
-        delay 4 * 1000, =>
+        delay @props.alertDelay, =>
             @setState alert: Noop()
 
+options =
+    routes: routes
+    defaultRoute: "/chat"
+    navbarItems: navbarItems
+    alertDelay: 10 * 1000
 mountNode = document.getElementById("react")
-React.renderComponent Root(routes: routes, defaultRoute: "/chat", navbarItems: navbarItems), mountNode
+
+React.renderComponent Root(options), mountNode
