@@ -288,7 +288,7 @@ Root = React.createClass
 
     render: ->
         (Dom.div null,
-            (Navbar brandName: "Peer Chat", navbarItems: @props.navbarItems),
+            (Navbar brandName: @props.brandName, navbarItems: @props.navbarItems),
             (@state.alert)
             (@state.currentComponent))
 
@@ -301,6 +301,7 @@ Root = React.createClass
 options =
     routes: routes
     defaultRoute: "/chat"
+    brandName: "Hendrix"
     navbarItems: navbarItems
     alertDelay: 10 * 1000
 mountNode = document.getElementById("react")
