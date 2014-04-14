@@ -17,7 +17,5 @@ Work in progress. **Star the repo if you would like this to take off!**
 * Marked,
 * PeerJS,
 * React,
-* React Bootstrap,
 * Sass,
-* Store.js,
-* Zepto.js;
+* Store.js;
