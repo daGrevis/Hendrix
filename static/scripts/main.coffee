@@ -3,8 +3,8 @@ Dom = React.DOM
 delay = (ms, fn) -> setTimeout fn, ms
 
 getSegments = ->
-    uri = new URI
-    uri.fragment().split("/").slice(1)
+    uri = location.hash[2..]
+    uri.split("/")
 
 PEER_KEY = "3wlgt1tsm69u23xr"
 BASE_URL = "#{ location.protocol }//#{ location.host }"
@@ -86,7 +86,8 @@ ChatMessages = React.createClass
     displayName: "ChatMessages"
 
     componentDidUpdate: ->
-        $("#chat-messages").scrollTop($("#chat-messages").height())
+        $chatMessages = document.getElementById("chat-messages")
+        $chatMessages.scrollTop = $chatMessages.scrollHeight
 
     render: ->
         (Dom.ul id: "chat-messages", className: "media-list",
@@ -244,7 +245,7 @@ Settings = React.createClass
         (Dom.form onSubmit: @save,
             (Input id: "displayName", label: "Display Name", valueLink: @linkState "displayName"),
             (Input id: "email", label: "Email (for Gravatar)", valueLink: @linkState "email"),
-            (ReactBootstrap.Button bsStyle: "success", type: "submit",
+            (Dom.button className: "btn btn-success", type: "submit",
                 "Save"))
 
     save: (event) ->
