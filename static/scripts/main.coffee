@@ -7,7 +7,6 @@ getSegments = ->
     uri.split("/")
 
 PEER_KEY = "3wlgt1tsm69u23xr"
-BASE_URL = "#{ location.protocol }//#{ location.host }"
 
 Noop = React.createClass
     displayName: "Noop"
@@ -171,7 +170,7 @@ ChatDisconnected = React.createClass
         otherId: ""
 
     render: ->
-        chatLink = "#{ BASE_URL }/#/chat/#{ @props.peerId }"
+        chatLink = "#{ location.origin + location.pathname }#/chat/#{ @props.peerId }"
 
         (Dom.div null,
             (Dom.form null,
