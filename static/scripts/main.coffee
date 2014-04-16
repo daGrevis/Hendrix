@@ -166,22 +166,19 @@ Chat = React.createClass
 
                     peerIds = @connectionsToPeerIds @connections
 
-
                     connection.on "open", =>
+
                         connectionsWithoutNewConnection = _.filter @connections, (c) -> c.peer != connection.peer
                         peerIdsWithoutNewConnection = @connectionsToPeerIds connectionsWithoutNewConnection
 
                         if peerIdsWithoutNewConnection.length
-
                             connection.send type: "newConnection", peerIds: peerIdsWithoutNewConnection
 
             if who != "x"
 
                 peer.on "connection", (connection) =>
 
-
                     connection.on "open", =>
-
 
                         @connections.push connection
 
@@ -199,9 +196,10 @@ Chat = React.createClass
                     @listenForMessage connection
 
                     connection.on "data", (data) =>
-                        if data.type == "newConnection"
-                            peerIds = data.peerIds
 
+                        if data.type == "newConnection"
+
+                            peerIds = data.peerIds
 
                             _.forEach peerIds, (peerId) =>
 
