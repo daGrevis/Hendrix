@@ -175,11 +175,14 @@ Chat = React.createClass
 
                     console.log "connected peers: #{ peerIds }"
 
-                    _.forEach @connections, (c) =>
-                        c.on "open", =>
-                            console.log "sending connections to #{ c.peer }"
+                    connection.on "open", =>
+                        connectionsWithoutNewConnection = _.filter @connections, (c) -> c.peer != connection.peer
+                        peerIdsWithoutNewConnection = @connectionsToPeerIds connectionsWithoutNewConnection
 
-                            c.send type: "newConnection", peerIds: peerIds
+                        if peerIdsWithoutNewConnection.length
+                            console.log "sending connections to #{ connection.peer }"
+
+                            connection.send type: "newConnection", peerIds: peerIdsWithoutNewConnection
 
             if who != "x"
                 console.log "acting as #{ who }, normal peer"
@@ -212,9 +215,8 @@ Chat = React.createClass
                     connection.on "data", (data) =>
                         if data.type == "newConnection"
                             peerIds = data.peerIds
-                            peerIds = _.filter peerIds, (peerId) -> peerId != who
 
-                            console.log "new connections without my connection: #{ peerIds }"
+                            console.log "new connections to connect to: #{ peerIds }"
 
                             _.forEach peerIds, (peerId) =>
                                 console.log "connecting to #{ peerId }"
