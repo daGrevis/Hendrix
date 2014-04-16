@@ -155,19 +155,14 @@ Chat = React.createClass
             alert error.type
 
         peer.on "open", (peerId) =>
-
             if who == "x"
-
                 peer.on "connection", (connection) =>
-
                     @connections.push connection
-
                     @listenForMessage connection
 
                     peerIds = @connectionsToPeerIds @connections
 
                     connection.on "open", =>
-
                         connectionsWithoutNewConnection = _.filter @connections, (c) -> c.peer != connection.peer
                         peerIdsWithoutNewConnection = @connectionsToPeerIds connectionsWithoutNewConnection
 
@@ -175,45 +170,31 @@ Chat = React.createClass
                             connection.send type: "newConnection", peerIds: peerIdsWithoutNewConnection
 
             if who != "x"
-
                 connection = peer.connect "x"
 
                 connection.on "error", (error) ->
                     alert error
 
                 connection.on "open", =>
-
                     @connections.push connection
-
                     @listenForMessage connection
 
                     connection.on "data", (data) =>
-
                         if data.type == "newConnection"
-
-                            peerIds = data.peerIds
-
-                            _.forEach peerIds, (peerId) =>
-
+                            _.forEach data.peerIds, (peerId) =>
                                 connection = peer.connect peerId
 
                                 do (connection) =>
-
                                     connection.on "error", (error) ->
                                         alert error.type
 
                                     connection.on "open", =>
-
                                         @connections.push connection
-
                                         @listenForMessage connection
 
                 peer.on "connection", (connection) =>
-
                     connection.on "open", =>
-
                         @connections.push connection
-
                         @listenForMessage connection
 
     render: ->
