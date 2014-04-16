@@ -142,7 +142,7 @@ Chat = React.createClass
         messages: []
 
     connectionsToPeerIds: (connections) ->
-        _.map connections, (connection) => connection.peer
+        _.map connections, (connection) -> connection.peer
 
     componentWillMount: ->
         who = getSegments()[1]
@@ -151,7 +151,7 @@ Chat = React.createClass
 
         @connections = []
 
-        peer.on "error", (error) =>
+        peer.on "error", (error) ->
             alert error.type
 
         peer.on "open", (peerId) =>
@@ -178,7 +178,7 @@ Chat = React.createClass
 
                 connection = peer.connect "x"
 
-                connection.on "error", (error) =>
+                connection.on "error", (error) ->
                     alert error
 
                 connection.on "open", =>
@@ -199,7 +199,7 @@ Chat = React.createClass
 
                                 do (connection) =>
 
-                                    connection.on "error", (error) =>
+                                    connection.on "error", (error) ->
                                         alert error.type
 
                                     connection.on "open", =>
