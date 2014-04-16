@@ -7,6 +7,7 @@ getSegments = ->
     uri.split("/")
 
 PEER_KEY = "3wlgt1tsm69u23xr"
+BASE_URL = "#{ location.protocol }//#{ location.host }"
 
 Noop = React.createClass
     displayName: "Noop"
@@ -135,19 +136,33 @@ ChatForm = React.createClass
             keysPressed[event.key] = false
             @setState keysPressed: keysPressed
 
+ChatLink = React.createClass
+    displayName: "ChatLink"
+
+    render: ->
+        if not @props.peerIdForHost
+            return Noop()
+
+        (Input id: "chatLink", label: "Chat Link", readOnly: true, value: @getLink())
+
+    getLink: ->
+        "#{ BASE_URL }/#/chat/#{ @props.peerIdForHost}"
+
 Chat = React.createClass
-    displayName: "Foo"
+    displayName: "Chat"
 
     getInitialState: ->
+        peerIdForHost: null
         messages: []
 
     connectionsToPeerIds: (connections) ->
         _.map connections, (connection) -> connection.peer
 
     componentWillMount: ->
-        who = getSegments()[1]
+        peerIdForHost = getSegments()[1]
+        isHost = not peerIdForHost?
 
-        peer = new Peer who, key: PEER_KEY, debug: 2
+        peer = new Peer(key: PEER_KEY)
 
         @connections = []
 
@@ -155,7 +170,10 @@ Chat = React.createClass
             alert error.type
 
         peer.on "open", (peerId) =>
-            if who == "x"
+            if isHost
+                peerIdForHost = peer.id
+                @setState peerIdForHost: peerIdForHost
+
                 peer.on "connection", (connection) =>
                     @connections.push connection
                     @listenForMessage connection
@@ -169,8 +187,10 @@ Chat = React.createClass
                         if peerIdsWithoutNewConnection.length
                             connection.send type: "newConnection", peerIds: peerIdsWithoutNewConnection
 
-            if who != "x"
-                connection = peer.connect "x"
+            if not isHost
+                @setState peerIdForHost: peerIdForHost
+
+                connection = peer.connect peerIdForHost
 
                 connection.on "error", (error) ->
                     alert error
@@ -199,6 +219,7 @@ Chat = React.createClass
 
     render: ->
         (Dom.div null,
+            (ChatLink peerIdForHost: @state.peerIdForHost),
             (ChatMessages messages: @state.messages),
             (ChatForm sendMessage: @sendMessage))
 
@@ -249,7 +270,8 @@ Settings = React.createClass
         @props.addAlert type: "success", "Changes saved!"
 
 routes = [
-    [/chat\/\w+/, Chat]
+    ["/chat", Chat]
+    [/chat\/.+/, Chat]
     ["/settings", Settings]
 ]
 
