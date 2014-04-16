@@ -176,14 +176,6 @@ Chat = React.createClass
 
             if who != "x"
 
-                peer.on "connection", (connection) =>
-
-                    connection.on "open", =>
-
-                        @connections.push connection
-
-                        @listenForMessage connection
-
                 connection = peer.connect "x"
 
                 connection.on "error", (error) =>
@@ -205,14 +197,24 @@ Chat = React.createClass
 
                                 connection = peer.connect peerId
 
-                                connection.on "error", (error) =>
-                                    alert error.type
+                                do (connection) =>
 
-                                connection.on "open", =>
+                                    connection.on "error", (error) =>
+                                        alert error.type
 
-                                    @connections.push connection
+                                    connection.on "open", =>
 
-                                    @listenForMessage connection
+                                        @connections.push connection
+
+                                        @listenForMessage connection
+
+                peer.on "connection", (connection) =>
+
+                    connection.on "open", =>
+
+                        @connections.push connection
+
+                        @listenForMessage connection
 
     render: ->
         (Dom.div null,
