@@ -146,10 +146,8 @@ Chat = React.createClass
 
     componentWillMount: ->
         who = getSegments()[1]
-        console.log "who: #{ who }"
 
         peer = new Peer who, key: PEER_KEY, debug: 2
-        console.log "new Peer()"
 
         @connections = []
 
@@ -157,15 +155,10 @@ Chat = React.createClass
             alert error.type
 
         peer.on "open", (peerId) =>
-            console.log "peer.on"
-            console.log "peerId: #{ peerId }"
 
             if who == "x"
-                console.log "acting as #{ who }, host"
 
                 peer.on "connection", (connection) =>
-                    console.log "new connection"
-                    console.log "peer #{ connection.peer } just connected to host #{ peerId }"
 
                     @connections.push connection
 
@@ -173,40 +166,33 @@ Chat = React.createClass
 
                     peerIds = @connectionsToPeerIds @connections
 
-                    console.log "connected peers: #{ peerIds }"
 
                     connection.on "open", =>
                         connectionsWithoutNewConnection = _.filter @connections, (c) -> c.peer != connection.peer
                         peerIdsWithoutNewConnection = @connectionsToPeerIds connectionsWithoutNewConnection
 
                         if peerIdsWithoutNewConnection.length
-                            console.log "sending connections to #{ connection.peer }"
 
                             connection.send type: "newConnection", peerIds: peerIdsWithoutNewConnection
 
             if who != "x"
-                console.log "acting as #{ who }, normal peer"
 
                 peer.on "connection", (connection) =>
 
-                    console.log "connection from #{ connection.peer }"
 
                     connection.on "open", =>
 
-                        console.log "connection from #{ connection.peer } open"
 
                         @connections.push connection
 
                         @listenForMessage connection
 
                 connection = peer.connect "x"
-                console.log "connecting to x, host"
 
                 connection.on "error", (error) =>
                     alert error
 
                 connection.on "open", =>
-                    console.log "connection to #{ connection.peer } open"
 
                     @connections.push connection
 
@@ -216,10 +202,8 @@ Chat = React.createClass
                         if data.type == "newConnection"
                             peerIds = data.peerIds
 
-                            console.log "new connections to connect to: #{ peerIds }"
 
                             _.forEach peerIds, (peerId) =>
-                                console.log "connecting to #{ peerId }"
 
                                 connection = peer.connect peerId
 
@@ -227,7 +211,6 @@ Chat = React.createClass
                                     alert error.type
 
                                 connection.on "open", =>
-                                    console.log "connection to #{ connection.peer } open"
 
                                     @connections.push connection
 
@@ -248,13 +231,11 @@ Chat = React.createClass
             message: message
 
         _.forEach @connections, (c) ->
-            console.log "sending message to #{ c.peer }"
             c.send data
 
     listenForMessage: (connection) ->
         connection.on "data", (data) =>
             if data.type == "message"
-                console.log "new message from #{ connection.peer }"
 
                 messages = @state.messages
                 messages.push data.message
