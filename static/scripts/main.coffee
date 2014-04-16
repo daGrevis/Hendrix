@@ -169,6 +169,8 @@ Chat = React.createClass
 
                     @connections.push connection
 
+                    @listenForMessage connection
+
                     peerIds = @connectionsToPeerIds @connections
 
                     console.log "connected peers: #{ peerIds }"
@@ -179,19 +181,23 @@ Chat = React.createClass
 
                             c.send type: "newConnection", peerIds: peerIds
 
-                    connection.on "data", (data) =>
-                        if data.type == "message"
-                            messages = @state.messages
-                            messages.push data.message
-                            @setState messages: messages
-
             if who != "x"
                 console.log "acting as #{ who }, normal peer"
 
+                peer.on "connection", (connection) =>
+
+                    console.log "connection from #{ connection.peer }"
+
+                    connection.on "open", =>
+
+                        console.log "connection from #{ connection.peer } open"
+
+                        @connections.push connection
+
+                        @listenForMessage connection
+
                 connection = peer.connect "x"
                 console.log "connecting to x, host"
-
-                @connections.push connection
 
                 connection.on "error", (error) =>
                     alert error
@@ -199,11 +205,9 @@ Chat = React.createClass
                 connection.on "open", =>
                     console.log "connection to #{ connection.peer } open"
 
-                    connection.on "data", (data) =>
-                        if data.type == "message"
-                            messages = @state.messages
-                            messages.push data.message
-                            @setState messages: messages
+                    @connections.push connection
+
+                    @listenForMessage connection
 
                     connection.on "data", (data) =>
                         if data.type == "newConnection"
@@ -225,12 +229,7 @@ Chat = React.createClass
 
                                     @connections.push connection
 
-                                    connection.on "data", (data) =>
-                                        console.log "RECEIVED MESSAGE FROM NEW PEER"
-                                        if data.type == "message"
-                                            messages = @state.messages
-                                            messages.push data.message
-                                            @setState messages: messages
+                                    @listenForMessage connection
 
     render: ->
         (Dom.div null,
@@ -249,6 +248,15 @@ Chat = React.createClass
         _.forEach @connections, (c) ->
             console.log "sending message to #{ c.peer }"
             c.send data
+
+    listenForMessage: (connection) ->
+        connection.on "data", (data) =>
+            if data.type == "message"
+                console.log "new message from #{ connection.peer }"
+
+                messages = @state.messages
+                messages.push data.message
+                @setState messages: messages
 
 Settings = React.createClass
     mixins: [React.addons.LinkedStateMixin]
