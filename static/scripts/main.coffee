@@ -155,9 +155,6 @@ Chat = React.createClass
         peerIdForHost: null
         messages: []
 
-    connectionsToPeerIds: (connections) ->
-        _.map connections, (connection) -> connection.peer
-
     componentWillMount: ->
         peerIdForHost = getSegments()[1]
         isHost = not peerIdForHost?
@@ -175,17 +172,15 @@ Chat = React.createClass
                 @setState peerIdForHost: peerIdForHost
 
                 peer.on "connection", (connection) =>
-                    @connections.push connection
-                    @listenForMessage connection
-
                     connection.on "open", =>
+                        if @connections.length
+                            peerIds = _.map @connections, (connection) -> connection.peer
+                            connection.send type: "newConnection", peerIds: peerIds
+
+                        @connections.push connection
+                        @listenForMessage connection
+
                         @showAlertAboutNewConnection()
-
-                        connectionsWithoutNewConnection = _.filter @connections, (c) -> c.peer != connection.peer
-                        peerIdsWithoutNewConnection = @connectionsToPeerIds connectionsWithoutNewConnection
-
-                        if peerIdsWithoutNewConnection.length
-                            connection.send type: "newConnection", peerIds: peerIdsWithoutNewConnection
 
             if not isHost
                 @setState peerIdForHost: peerIdForHost
@@ -214,10 +209,10 @@ Chat = React.createClass
 
                 peer.on "connection", (connection) =>
                     connection.on "open", =>
-                        @showAlertAboutNewConnection()
-
                         @connections.push connection
                         @listenForMessage connection
+
+                        @showAlertAboutNewConnection()
 
     render: ->
         (Dom.div null,
@@ -234,8 +229,8 @@ Chat = React.createClass
             type: "message"
             message: message
 
-        _.forEach @connections, (c) ->
-            c.send data
+        _.forEach @connections, (connection) ->
+            connection.send data
 
     listenForMessage: (connection) ->
         connection.on "data", (data) =>
