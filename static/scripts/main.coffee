@@ -140,24 +140,24 @@ ChatLink = React.createClass
     displayName: "ChatLink"
 
     render: ->
-        if not @props.peerIdForHost
+        if not @props.peerIdForFounder
             return Noop()
 
         (Input id: "chatLink", label: "Chat Link", readOnly: true, value: @getLink())
 
     getLink: ->
-        "#{ BASE_URL }/#/chat/#{ @props.peerIdForHost}"
+        "#{ BASE_URL }/#/chat/#{ @props.peerIdForFounder}"
 
 Chat = React.createClass
     displayName: "Chat"
 
     getInitialState: ->
-        peerIdForHost: null
+        peerIdForFounder: null
         messages: []
 
     componentWillMount: ->
-        peerIdForHost = getSegments()[1]
-        isHost = not peerIdForHost?
+        peerIdForFounder = getSegments()[1]
+        isFounder = not peerIdForFounder?
 
         peer = new Peer(key: PEER_KEY)
 
@@ -167,9 +167,9 @@ Chat = React.createClass
             alert error.type
 
         peer.on "open", (peerId) =>
-            if isHost
-                peerIdForHost = peer.id
-                @setState peerIdForHost: peerIdForHost
+            if isFounder
+                peerIdForFounder = peer.id
+                @setState peerIdForFounder: peerIdForFounder
 
                 peer.on "connection", (connection) =>
                     connection.on "open", =>
@@ -182,10 +182,10 @@ Chat = React.createClass
 
                         @showAlertAboutNewConnection()
 
-            if not isHost
-                @setState peerIdForHost: peerIdForHost
+            if not isFounder
+                @setState peerIdForFounder: peerIdForFounder
 
-                connection = peer.connect peerIdForHost
+                connection = peer.connect peerIdForFounder
 
                 connection.on "error", (error) ->
                     alert error
@@ -216,7 +216,7 @@ Chat = React.createClass
 
     render: ->
         (Dom.div null,
-            (ChatLink peerIdForHost: @state.peerIdForHost),
+            (ChatLink peerIdForFounder: @state.peerIdForFounder),
             (ChatMessages messages: @state.messages),
             (ChatForm sendMessage: @sendMessage))
 
