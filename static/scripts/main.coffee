@@ -7,7 +7,7 @@ getSegments = ->
     uri.split("/")
 
 PEER_KEY = "3wlgt1tsm69u23xr"
-BASE_URL = "#{ location.protocol }//#{ location.host }"
+BASE_URL = location.origin + location.pathname
 
 Noop = React.createClass
     displayName: "Noop"
@@ -146,7 +146,7 @@ ChatLink = React.createClass
         (Input id: "chatLink", label: "Chat Link", readOnly: true, value: @getLink())
 
     getLink: ->
-        "#{ BASE_URL }/#/chat/#{ @props.peerIdForFounder}"
+        "#{ BASE_URL }#/chat/#{ @props.peerIdForFounder}"
 
 Chat = React.createClass
     displayName: "Chat"
