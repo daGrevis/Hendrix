@@ -163,8 +163,10 @@ Chat = React.createClass
 
         @connections = []
 
-        peer.on "error", (error) ->
-            alert error.type
+        peer.on "error", (error) =>
+            console.log error
+
+            @props.addAlert type: "danger", "Something went terribly wrong! See console."
 
         peer.on "open", (peerId) =>
             if isFounder
@@ -187,9 +189,6 @@ Chat = React.createClass
 
                 connection = peer.connect peerIdForFounder
 
-                connection.on "error", (error) ->
-                    alert error
-
                 connection.on "open", =>
                     @connections.push connection
                     @listenForMessage connection
@@ -200,9 +199,6 @@ Chat = React.createClass
                                 connection = peer.connect peerId
 
                                 do (connection) =>
-                                    connection.on "error", (error) ->
-                                        alert error.type
-
                                     connection.on "open", =>
                                         @connections.push connection
                                         @listenForMessage connection
