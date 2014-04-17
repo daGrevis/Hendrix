@@ -65,6 +65,16 @@ Navbar = React.createClass
                     (Dom.li null,
                         (Dom.a href: "##{ url }", title))))
 
+Footer = React.createClass
+    displayName: "Footer"
+
+    render: ->
+        (Dom.div id: "footer",
+            (Dom.p null,
+                (Dom.a href: "https://github.com/daGrevis/Hendrix", "Hendrix on GitHub"))
+            (Dom.p null,
+                (Dom.a href: "https://twitter.com/dagrevis", "Made by @daGrevis")))
+
 Alert = React.createClass
     displayName: "Alert"
 
@@ -105,7 +115,7 @@ ChatMessages = React.createClass
         $chatMessages = document.getElementById "chat-messages"
         $chatMessages.scrollTop = $chatMessages.scrollHeight
 
-        height = window.innerHeight - 320
+        height = window.innerHeight - 400
         ($chatMessages.style).height = "#{ height }px"
 
     render: ->
@@ -323,10 +333,11 @@ Root = React.createClass
         router.init @props.defaultRoute
 
     render: ->
-        (Dom.div null,
+        (Dom.div className: "container",
             (Navbar brandName: @props.brandName, navbarItems: @props.navbarItems),
             (@state.alert)
-            (@state.currentComponent))
+            (@state.currentComponent)
+            (Footer()))
 
     addAlert: (props, children) ->
         @setState alert: Alert(props, children)
