@@ -178,9 +178,9 @@ Chat = React.createClass
                     @connections.push connection
                     @listenForMessage connection
 
-                    peerIds = @connectionsToPeerIds @connections
-
                     connection.on "open", =>
+                        @showAlertAboutNewConnection()
+
                         connectionsWithoutNewConnection = _.filter @connections, (c) -> c.peer != connection.peer
                         peerIdsWithoutNewConnection = @connectionsToPeerIds connectionsWithoutNewConnection
 
@@ -214,6 +214,8 @@ Chat = React.createClass
 
                 peer.on "connection", (connection) =>
                     connection.on "open", =>
+                        @showAlertAboutNewConnection()
+
                         @connections.push connection
                         @listenForMessage connection
 
@@ -242,6 +244,9 @@ Chat = React.createClass
                 messages = @state.messages
                 messages.push data.message
                 @setState messages: messages
+
+    showAlertAboutNewConnection: ->
+        @props.addAlert type: "info", "Someone joined the channel!"
 
 Settings = React.createClass
     mixins: [React.addons.LinkedStateMixin]
