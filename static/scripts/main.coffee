@@ -207,6 +207,9 @@ Chat = React.createClass
                                         @connections.push connection
                                         @listenForMessage connection
 
+                connection.on "close", =>
+                    @props.addAlert type: "warning", "Founder left the channel!"
+
                 peer.on "connection", (connection) =>
                     connection.on "open", =>
                         @connections.push connection
