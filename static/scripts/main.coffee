@@ -6,6 +6,15 @@ getSegments = ->
     uri = location.hash[2..]
     uri.split("/")
 
+generateUuid4 = ->
+    # http://stackoverflow.com/a/2117523/458610
+    "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace /[xy]/g, (c) ->
+        r = Math.random() * 16 | 0
+        v = (if c is "x" then r else (r & 0x3 | 0x8))
+        v.toString 16
+
+sum = (coll) -> _.reduce coll, ((a, x) -> a + x), 0
+
 PEER_KEY = "3wlgt1tsm69u23xr"
 BASE_URL = location.origin + location.pathname
 
@@ -24,7 +33,10 @@ Input = React.createClass
             className: "form-control"
         props = _.extend defaultProps, @props
 
-        (Dom.div className: "form-group",
+        idForDiv = props.id
+        props.id = generateUuid4()
+
+        (Dom.div id: idForDiv, className: "form-group",
             (Dom.label htmlFor: props.id, props.label)
             (Dom.input props))
 
@@ -44,7 +56,7 @@ Navbar = React.createClass
     displayName: "Navbar"
 
     render: ->
-        (Dom.nav className: "navbar navbar-default",
+        (Dom.nav id: "navbar", className: "navbar navbar-default",
             (Dom.div className: "navbar-header",
                 (Dom.a className: "navbar-brand", @props.brandName)),
             (Dom.ul className: "nav navbar-nav",
@@ -90,7 +102,7 @@ ChatMessages = React.createClass
     displayName: "ChatMessages"
 
     componentDidUpdate: ->
-        $chatMessages = document.getElementById("chat-messages")
+        $chatMessages = document.getElementById "chat-messages"
         $chatMessages.scrollTop = $chatMessages.scrollHeight
 
     render: ->
@@ -116,7 +128,7 @@ ChatForm = React.createClass
             "Enter": false
 
     render: ->
-        (Dom.form onKeyDown: @keyDown, onKeyUp: @keyUp,
+        (Dom.form id: "chat-form", onKeyDown: @keyDown, onKeyUp: @keyUp,
             (Textarea id: "message", placeholder: "Type a message here...", valueLink: @linkState "message"))
 
     keyDown: (event) ->
@@ -153,7 +165,7 @@ ChatLink = React.createClass
         if not @props.peerIdForFounder
             return Noop()
 
-        (Input id: "chatLink", label: "Chat Link", readOnly: true, value: @getLink())
+        (Input id: "chat-link", label: "Chat Link", readOnly: true, value: @getLink())
 
     getLink: ->
         "#{ BASE_URL }#/chat/#{ @props.peerIdForFounder}"
