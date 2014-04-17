@@ -75,7 +75,11 @@ ChatMessage = React.createClass
     render: ->
         content = marked @props.content
 
-        (Dom.li className: "media #{ "repeated-message" if @props.isRepeated }",
+        classNamesForLi = ["media"]
+        if @props.isRepeated
+            classNamesForLi.push "repeated-message"
+
+        (Dom.li className: classNamesForLi.join(" "),
             (Dom.a className: "pull-left avatar",
                 (Dom.img width: 32, height: 32, src: "http://avatars.io/email/#{ @props.email }?size=small", className: "media-object"))
             (Dom.div className: "media-body",
