@@ -105,6 +105,9 @@ ChatMessages = React.createClass
         $chatMessages = document.getElementById "chat-messages"
         $chatMessages.scrollTop = $chatMessages.scrollHeight
 
+        height = window.innerHeight - 320
+        ($chatMessages.style).height = "#{ height }px"
+
     render: ->
         (Dom.ul id: "chat-messages", className: "media-list",
             displayName = null
