@@ -75,11 +75,11 @@ ChatMessage = React.createClass
     render: ->
         content = marked @props.content
 
-        (Dom.li className: "media",
-            (Dom.a className: "pull-left",
-                (Dom.img width: 32, height: 32, src: "http://avatars.io/email/#{ @props.email }?size=small", className: "media-object")),
+        (Dom.li className: "media #{ "repeated-message" if @props.isRepeated }",
+            (Dom.a className: "pull-left avatar",
+                (Dom.img width: 32, height: 32, src: "http://avatars.io/email/#{ @props.email }?size=small", className: "media-object"))
             (Dom.div className: "media-body",
-                (Dom.h4 className: "media-heading", @props.displayName),
+                (Dom.h4 className: "media-heading displayName", @props.displayName)
                 (Dom.span dangerouslySetInnerHTML: {__html: content})))
 
 ChatMessages = React.createClass
@@ -91,8 +91,14 @@ ChatMessages = React.createClass
 
     render: ->
         (Dom.ul id: "chat-messages", className: "media-list",
+            displayName = null
             _.map @props.messages, (message) ->
-                (ChatMessage content: message.content, displayName: message.displayName, email: message.email, email: message.email))
+                if displayName == message.displayName
+                    isRepeated = true
+                else
+                    isRepeated = false
+                displayName = message.displayName
+                (ChatMessage content: message.content, displayName: message.displayName, email: message.email, isRepeated: isRepeated))
 
 ChatForm = React.createClass
     mixins: [React.addons.LinkedStateMixin]
