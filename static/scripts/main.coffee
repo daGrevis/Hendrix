@@ -120,13 +120,13 @@ ChatMessages = React.createClass
 
     render: ->
         (Dom.ul id: "chat-messages", className: "media-list",
-            displayName = null
-            _.map @props.messages, (message) ->
-                if displayName == message.displayName
+            peerId = false
+            _.map @props.messages, (message) =>
+                if peerId == message.peerId
                     isRepeated = true
                 else
                     isRepeated = false
-                displayName = message.displayName
+                peerId = message.peerId
                 (ChatMessage content: message.content, displayName: message.displayName, email: message.email, isRepeated: isRepeated))
 
 ChatForm = React.createClass
@@ -204,6 +204,8 @@ Chat = React.createClass
             @props.addAlert type: "danger", "Something went terribly wrong! See console."
 
         peer.on "open", (peerId) =>
+            @peerId = peer.id
+
             if isFounder
                 peerIdForFounder = peer.id
                 @setState peerIdForFounder: peerIdForFounder
@@ -256,6 +258,7 @@ Chat = React.createClass
 
     sendMessage: (message) ->
         messages = @state.messages
+        message.peerId = @peerId
         messages.push message
         @setState messages: messages
 
