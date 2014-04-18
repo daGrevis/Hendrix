@@ -317,9 +317,6 @@ navbarItems = [
     ["/settings", "Settings"]
 ]
 
-# TODO: Move this to `Root` component.
-window.router = Router()
-
 Root = React.createClass
     displayName: "Root"
 
@@ -327,13 +324,16 @@ Root = React.createClass
         currentComponent: Noop()
         alert: Noop()
 
+    componentWillMount: ->
+        @router = Router()
+
     componentDidMount: ->
         _.forEach @props.routes, (route) =>
             [url, component] = route
 
-            router.on url, =>
-                @setState currentComponent: component(addAlert: @addAlert)
-        router.init @props.defaultRoute
+            @router.on url, =>
+                @setState currentComponent: component(router: @router, addAlert: @addAlert)
+        @router.init @props.defaultRoute
 
     render: ->
         (Dom.div className: "container",
