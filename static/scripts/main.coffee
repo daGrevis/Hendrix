@@ -191,26 +191,28 @@ Chat = React.createClass
         messages: []
 
     componentWillMount: ->
+        @selfUnmount = false
+
         peerIdForFounder = getSegments()[1]
         isFounder = not peerIdForFounder?
 
-        peer = new Peer(key: PEER_KEY)
+        @peer = new Peer(key: PEER_KEY)
 
         @connections = []
 
-        peer.on "error", (error) =>
+        @peer.on "error", (error) =>
             console.log error
 
             @props.addAlert type: "danger", "Something went terribly wrong! See console."
 
-        peer.on "open", (peerId) =>
-            @peerId = peer.id
+        @peer.on "open", (peerId) =>
+            @peerId = @peer.id
 
             if isFounder
-                peerIdForFounder = peer.id
+                peerIdForFounder = @peer.id
                 @setState peerIdForFounder: peerIdForFounder
 
-                peer.on "connection", (connection) =>
+                @peer.on "connection", (connection) =>
                     connection.on "open", =>
                         if @connections.length
                             peerIds = _.map @connections, (connection) -> connection.peer
@@ -224,7 +226,7 @@ Chat = React.createClass
             if not isFounder
                 @setState peerIdForFounder: peerIdForFounder
 
-                connection = peer.connect peerIdForFounder
+                connection = @peer.connect peerIdForFounder
 
                 connection.on "open", =>
                     @connections.push connection
@@ -233,7 +235,7 @@ Chat = React.createClass
                     connection.on "data", (data) =>
                         if data.type == "newConnection"
                             _.forEach data.peerIds, (peerId) =>
-                                connection = peer.connect peerId
+                                connection = @peer.connect peerId
 
                                 do (connection) =>
                                     connection.on "open", =>
@@ -241,14 +243,22 @@ Chat = React.createClass
                                         @listenForMessage connection
 
                 connection.on "close", =>
+                    if @selfUnmount
+                        return
+
                     @props.addAlert type: "warning", "Founder left the channel!"
 
-                peer.on "connection", (connection) =>
+                @peer.on "connection", (connection) =>
                     connection.on "open", =>
                         @connections.push connection
                         @listenForMessage connection
 
                         @showAlertAboutNewConnection()
+
+    componentWillUnmount: ->
+        @selfUnmount = true
+
+        @peer.destroy()
 
     render: ->
         (Dom.div null,
