@@ -209,6 +209,8 @@ Chat = React.createClass
             @peerId = @peer.id
 
             if isFounder
+                @props.addAlert type: "success", "You just created a channel! You are the founder."
+
                 peerIdForFounder = @peer.id
                 @setState peerIdForFounder: peerIdForFounder
 
@@ -224,6 +226,8 @@ Chat = React.createClass
                         @showAlertAboutNewConnection()
 
             if not isFounder
+                @props.addAlert type: "success", "You just joined to an existing channel! You are a peer."
+
                 @setState peerIdForFounder: peerIdForFounder
 
                 connection = @peer.connect peerIdForFounder
