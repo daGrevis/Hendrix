@@ -1,0 +1,24 @@
+body {
+  margin: 2em 0; }
+
+#chat-messages {
+  word-break: break-all;
+  overflow: auto;
+  padding-right: 50px; }
+  #chat-messages .media:first-child {
+    margin-top: 15px; }
+  #chat-messages .repeated-message, #chat-messages .notice-message {
+    margin-left: 42px; }
+    #chat-messages .repeated-message .avatar, #chat-messages .notice-message .avatar {
+      display: none; }
+    #chat-messages .repeated-message .displayName, #chat-messages .notice-message .displayName {
+      display: none; }
+  #chat-messages .repeated-message {
+    margin-top: 0; }
+  #chat-messages .notice-message {
+    font-style: italic;
+    color: #777777; }
+
+#footer {
+  margin-top: 40px;
+  line-height: 1; }
