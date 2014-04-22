@@ -151,7 +151,7 @@ ChatForm = React.createClass
 
     render: ->
         (Dom.form id: "chat-form", onKeyDown: @keyDown, onKeyUp: @keyUp,
-            (Textarea id: "message", placeholder: "Type a message here...", valueLink: @linkState "message"))
+            (Textarea id: "message", placeholder: "Type a message here...", valueLink: @linkState("message"), readOnly: not @props.channelActive))
 
     keyDown: (event) ->
         if event.key in _.keys @state.keysPressed
@@ -198,6 +198,7 @@ Chat = React.createClass
     getInitialState: ->
         peerIdForFounder: null
         messages: []
+        channelActive: false
 
     componentWillMount: ->
         @selfUnmount = false
@@ -216,6 +217,8 @@ Chat = React.createClass
 
         @peer.on "open", (peerId) =>
             @peerId = @peer.id
+
+            @setState channelActive: true
 
             if isFounder
                 @props.addAlert type: "success", "You just created a channel! You are the founder."
@@ -257,9 +260,11 @@ Chat = React.createClass
 
                 connection.on "close", =>
                     if @selfUnmount
+                        alert "selfUnmount"
                         return
 
-                    @props.addAlert type: "warning", "Founder left the channel!"
+                    @addNotice "Founder left the channel!"
+                    @setState channelActive: false
 
                 @peer.on "connection", (connection) =>
                     connection.on "open", =>
@@ -277,7 +282,7 @@ Chat = React.createClass
         (Dom.div null,
             (ChatLink peerIdForFounder: @state.peerIdForFounder),
             (ChatMessages messages: @state.messages),
-            (ChatForm sendMessage: @sendMessage))
+            (ChatForm sendMessage: @sendMessage, channelActive: @state.channelActive))
 
     sendMessage: (message) ->
         messages = @state.messages
@@ -318,8 +323,8 @@ Settings = React.createClass
 
     render: ->
         (Dom.form onSubmit: @save,
-            (Input id: "displayName", label: "Display Name", valueLink: @linkState "displayName"),
-            (Input id: "email", label: "Email (for Gravatar)", valueLink: @linkState "email"),
+            (Input id: "displayName", label: "Display Name", valueLink: @linkState("displayName")),
+            (Input id: "email", label: "Email (for Gravatar)", valueLink: @linkState("email")),
             (Dom.button className: "btn btn-success", type: "submit",
                 "Save"))
 
