@@ -237,6 +237,8 @@ Chat = React.createClass
 
                         @addNotice "Someone joined the channel..."
 
+                    connection.on "close", @connectionClose
+
             if not isFounder
                 @props.addAlert type: "success", "You just joined to an existing channel! You are a peer."
 
@@ -258,13 +260,14 @@ Chat = React.createClass
                                         @connections.push connection
                                         @listenForMessage connection
 
-                connection.on "close", =>
-                    if @selfUnmount
-                        alert "selfUnmount"
-                        return
+                                        connection.on "close", @connectionClose
 
-                    @addNotice "Founder left the channel!"
-                    @setState channelActive: false
+                    connection.on "close", =>
+                        if @selfUnmount
+                            return
+
+                        @addNotice "Founder left the channel!"
+                        @setState channelActive: false
 
                 @peer.on "connection", (connection) =>
                     connection.on "open", =>
@@ -272,6 +275,8 @@ Chat = React.createClass
                         @listenForMessage connection
 
                         @addNotice "Someone joined the channel..."
+
+                        connection.on "close", @connectionClose
 
     componentWillUnmount: ->
         @selfUnmount = true
@@ -304,6 +309,9 @@ Chat = React.createClass
                 messages = @state.messages
                 messages.push data.message
                 @setState messages: messages
+
+    connectionClose: ->
+        @addNotice "Someone left the channel..."
 
     addNotice: (content) ->
         notice_message =
