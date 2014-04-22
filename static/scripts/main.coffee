@@ -299,13 +299,17 @@ Chat = React.createClass
             type: "message"
             message: message
 
-        _.forEach @connections, (connection) ->
-            connection.send data
+        newConnections = []
+        _.forEach @connections, (connection) =>
+            if connection.open
+                newConnections.push connection
+
+                connection.send data
+        @connections = newConnections
 
     listenForMessage: (connection) ->
         connection.on "data", (data) =>
             if data.type == "message"
-
                 messages = @state.messages
                 messages.push data.message
                 @setState messages: messages
