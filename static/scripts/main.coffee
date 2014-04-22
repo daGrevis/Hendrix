@@ -115,7 +115,7 @@ ChatMessages = React.createClass
         $chatMessages = document.getElementById "chat-messages"
         $chatMessages.scrollTop = $chatMessages.scrollHeight
 
-        height = window.innerHeight - 400
+        height = window.innerHeight - 480
         ($chatMessages.style).height = "#{ height }px"
 
     render: ->
@@ -367,7 +367,7 @@ options =
     defaultRoute: "/chat"
     brandName: "Hendrix"
     navbarItems: navbarItems
-    alertDelay: 10 * 1000
+    alertDelay: 4 * 1000
 mountNode = document.getElementById("react")
 
 React.renderComponent Root(options), mountNode
