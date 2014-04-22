@@ -98,6 +98,8 @@ ChatMessage = React.createClass
         content = marked @props.content
 
         classNamesForLi = ["media"]
+        if @props.isNotice
+            classNamesForLi.push "notice-message"
         if @props.isRepeated
             classNamesForLi.push "repeated-message"
 
@@ -127,7 +129,14 @@ ChatMessages = React.createClass
                 else
                     isRepeated = false
                 peerId = message.peerId
-                (ChatMessage content: message.content, displayName: message.displayName, email: message.email, isRepeated: isRepeated))
+
+                props =
+                    content: message.content
+                    displayName: message.displayName
+                    email: message.email
+                    isNotice: message.isNotice
+                    isRepeated: isRepeated
+                (ChatMessage props))
 
 ChatForm = React.createClass
     mixins: [React.addons.LinkedStateMixin]
@@ -223,7 +232,7 @@ Chat = React.createClass
                         @connections.push connection
                         @listenForMessage connection
 
-                        @showAlertAboutNewConnection()
+                        @addNotice "Someone joined the channel..."
 
             if not isFounder
                 @props.addAlert type: "success", "You just joined to an existing channel! You are a peer."
@@ -257,7 +266,7 @@ Chat = React.createClass
                         @connections.push connection
                         @listenForMessage connection
 
-                        @showAlertAboutNewConnection()
+                        @addNotice "Someone joined the channel..."
 
     componentWillUnmount: ->
         @selfUnmount = true
@@ -291,8 +300,12 @@ Chat = React.createClass
                 messages.push data.message
                 @setState messages: messages
 
-    showAlertAboutNewConnection: ->
-        @props.addAlert type: "info", "Someone joined the channel!"
+    addNotice: (content) ->
+        notice_message =
+            isNotice: true
+            content: content
+
+        @setState messages: (@state.messages).concat notice_message
 
 Settings = React.createClass
     mixins: [React.addons.LinkedStateMixin]
