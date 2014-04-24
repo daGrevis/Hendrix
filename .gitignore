@@ -1,3 +1,8 @@
+bin/
+include/
+lib/
+man/
+*.py[co]
 .sass-cache/
 static/scripts/*.js
 static/styles/*.css
