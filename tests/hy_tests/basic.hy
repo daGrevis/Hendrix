@@ -21,5 +21,10 @@
 (defn stop-selenium [selenium]
     (.close selenium))
 
-(defn test-math []
-    (assert (= (+ 2 2) 4)))
+(defn test-title []
+    (let [[server (start-server)]
+          [selenium (start-selenium)]]
+        (selenium.get (url-to "/"))
+        (assert (in "Hendrix" selenium.title))
+        (stop-selenium selenium)
+        (stop-server server)))
