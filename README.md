@@ -1,5 +1,8 @@
 # Hendrix
 
+**NB! Rewrite to ClojureScript is happening
+[here](https://github.com/daGrevis/hndrx)!**
+
 Peer-to-peer (p2p) chat
 
 ## About
